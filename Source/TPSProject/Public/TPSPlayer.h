@@ -42,6 +42,13 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* TPSCameraComponent;
 
+	// ÃÑ ½ºÄÌ·¹Å»¸Þ½Ã
+	UPROPERTY(VisibleAnywhere, Category = GunMesh);
+	class USkeletalMeshComponent* GunMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+    TSubclassOf<class ABullet> BulletClass;
+
 	//float Speed;
 	FVector Direction;
 };

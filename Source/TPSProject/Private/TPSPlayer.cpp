@@ -4,6 +4,7 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <Components/ArrowComponent.h>
+#include "Bullet.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -27,6 +28,15 @@ ATPSPlayer::ATPSPlayer()
 	{
 		GetMesh()->SetSkeletalMesh(SkeletalMeshFinder.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0.0, 0.0, -90.0), FRotator(0.0, -90.0, 0.0));
+	}
+
+	GunMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
+	GunMeshComponent->SetupAttachment(GetMesh());
+    ConstructorHelpers::FObjectFinder<USkeletalMesh> GunMesh(TEXT("'/Game/Resources/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
+	if (GunMesh.Succeeded())
+	{
+        GunMeshComponent->SetSkeletalMesh(GunMesh.Object);
+		GunMeshComponent->SetRelativeLocation(FVector(-14, 52, 120));
 	}
 }
 
@@ -84,5 +94,5 @@ void ATPSPlayer::Vertical(float value)
 
 void ATPSPlayer::Fire()
 {
-
+	GetWorld()->SpawnActor<ABullet>(BulletClass, GunMeshComponent->GetSocketTransform(TEXT("FirePosition")));
 }

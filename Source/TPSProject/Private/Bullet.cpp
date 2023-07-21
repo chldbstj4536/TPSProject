@@ -30,6 +30,8 @@ ABullet::ABullet()
 	ProjectileComponent->bShouldBounce = true;
 	// ¹Ýµ¿ °ª
 	ProjectileComponent->Bounciness = 0.3;
+
+	InitialLifeSpan = 2.0f;
 }
 
 // Called when the game starts or when spawned
