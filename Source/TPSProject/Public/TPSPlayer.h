@@ -19,6 +19,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+    void LookUp(float value);
+	UFUNCTION()
+    void Turn(float value);
+	UFUNCTION()
+    void Horizontal(float value);
+	UFUNCTION()
+    void Vertical(float value);
+	UFUNCTION()
+    void Fire();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -30,4 +41,7 @@ public:
 	class USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* TPSCameraComponent;
+
+	//float Speed;
+	FVector Direction;
 };
