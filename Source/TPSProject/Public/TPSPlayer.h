@@ -29,6 +29,12 @@ protected:
     void Vertical(float value);
 	UFUNCTION()
     void Fire();
+	UFUNCTION()
+	void Zoom();
+	UFUNCTION()
+	void EquipGranadeGun();
+	UFUNCTION()
+	void EquipSniperGun();
 
 public:	
 	// Called every frame
@@ -43,12 +49,29 @@ public:
 	class UCameraComponent* TPSCameraComponent;
 
 	// ÃÑ ½ºÄÌ·¹Å»¸Þ½Ã
-	UPROPERTY(VisibleAnywhere, Category = GunMesh);
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
 	class USkeletalMeshComponent* GunMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = GunMesh)
+	class UStaticMeshComponent* SniperGunComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = SniperUI)
+	TSubclassOf<class UUserWidget> SniperUIClass;
+
+	class UUserWidget* SniperUI;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UParticleSystem* HitParticle;
 
 	UPROPERTY(EditDefaultsOnly)
     TSubclassOf<class ABullet> BulletClass;
 
-	//float Speed;
+	UPROPERTY(VisibleAnywhere)
 	FVector Direction;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsZooming = false;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bEquipGranadeGun = true;
 };
