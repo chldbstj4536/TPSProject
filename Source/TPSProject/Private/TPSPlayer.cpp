@@ -61,6 +61,8 @@ void ATPSPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	SniperUI = CreateWidget(GetWorld(), SniperUIClass);
+	CrosshairUI = CreateWidget(GetWorld(), CrosshairUIClass);
+	CrosshairUI->AddToViewport();
 }
 
 // Called every frame
@@ -134,6 +136,11 @@ void ATPSPlayer::Fire()
 		if (bHit)
         {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, HitInfo.ImpactPoint);
+			UPrimitiveComponent* HitComponent = HitInfo.GetComponent();
+			if (HitComponent != nullptr && HitComponent->IsSimulatingPhysics())
+			{
+				HitComponent->AddForce(-HitInfo.ImpactNormal * HitComponent->GetMass() * 500000);
+			}
         }
 	}
 }
@@ -144,12 +151,14 @@ void ATPSPlayer::Zoom()
 
 	if (bIsZooming)
 	{
+		CrosshairUI->RemoveFromParent();
 		SniperUI->AddToViewport();
         TPSCameraComponent->SetFieldOfView(45);
 	}
 	else
 	{
 		SniperUI->RemoveFromParent();
+		CrosshairUI->AddToViewport();
         TPSCameraComponent->SetFieldOfView(90);
 	}
 }

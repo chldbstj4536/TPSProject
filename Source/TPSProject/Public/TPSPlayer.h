@@ -61,6 +61,10 @@ public:
 	class UUserWidget* SniperUI;
 
 	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UUserWidget> CrosshairUIClass;
+	class UUserWidget* CrosshairUI;
+
+	UPROPERTY(EditDefaultsOnly)
 	class UParticleSystem* HitParticle;
 
 	UPROPERTY(EditDefaultsOnly)
