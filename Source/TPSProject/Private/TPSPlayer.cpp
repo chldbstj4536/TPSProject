@@ -7,6 +7,8 @@
 #include <Blueprint/UserWidget.h>
 #include <Particles/ParticleSystem.h>
 #include <Kismet/GameplayStatics.h>
+#include "Enemy.h"
+#include "EnemyFSM.h"
 #include "Bullet.h"
 
 // Sets default values
@@ -140,6 +142,12 @@ void ATPSPlayer::Fire()
 			if (HitComponent != nullptr && HitComponent->IsSimulatingPhysics())
 			{
 				HitComponent->AddForce(-HitInfo.ImpactNormal * HitComponent->GetMass() * 500000);
+			}
+
+			AEnemy* Enemy = Cast<AEnemy>(HitInfo.GetActor());
+			if (Enemy != nullptr)
+			{
+				Enemy->FSM->OnDamageProcess();
 			}
         }
 	}
