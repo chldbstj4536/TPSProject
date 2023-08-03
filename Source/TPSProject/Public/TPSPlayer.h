@@ -20,6 +20,10 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
+	void RunPressed();
+	UFUNCTION()
+	void RunReleased();
+	UFUNCTION()
     void LookUp(float value);
 	UFUNCTION()
     void Turn(float value);
@@ -70,8 +74,20 @@ public:
 	UPROPERTY(EditDefaultsOnly)
     TSubclassOf<class ABullet> BulletClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UCameraShakeBase> CameraShakeClass;
+
+	UPROPERTY(EditDefaultsOnly)
+    class USoundBase* FireSound;
+
 	UPROPERTY(VisibleAnywhere)
 	FVector Direction;
+
+	UPROPERTY(EditAnywhere)
+	float WalkSpeed = 200.0f;
+
+	UPROPERTY(EditAnywhere)
+	float RunSpeed = 600.0f;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsZooming = false;

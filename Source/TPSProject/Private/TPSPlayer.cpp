@@ -7,9 +7,12 @@
 #include <Blueprint/UserWidget.h>
 #include <Particles/ParticleSystem.h>
 #include <Kismet/GameplayStatics.h>
+#include <GameFramework/CharacterMovementComponent.h>
+#include <Sound/SoundBase.h>
 #include "Enemy.h"
 #include "EnemyFSM.h"
 #include "Bullet.h"
+#include "PlayerAnim.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -28,7 +31,7 @@ ATPSPlayer::ATPSPlayer()
 
 	bUseControllerRotationYaw = true;
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkeletalMeshFinder(TEXT("SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkeletalMeshFinder(TEXT("'/Game/AnimStarterPack/UE4_Mannequin/Mesh/SK_Mannequin.SK_Mannequin'"));
 	if (SkeletalMeshFinder.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(SkeletalMeshFinder.Object);
@@ -36,25 +39,33 @@ ATPSPlayer::ATPSPlayer()
 	}
 
 	GunMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
-	GunMeshComponent->SetupAttachment(GetMesh());
+	GunMeshComponent->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
     ConstructorHelpers::FObjectFinder<USkeletalMesh> GunMesh(TEXT("'/Game/Resources/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
 	if (GunMesh.Succeeded())
 	{
         GunMeshComponent->SetSkeletalMesh(GunMesh.Object);
-		GunMeshComponent->SetRelativeLocation(FVector(-14, 52, 120));
+		GunMeshComponent->SetRelativeLocation(FVector(-17, 10, -3));
+		GunMeshComponent->SetRelativeRotation(FRotator(0, 90, 0));
 	}
 	GunMeshComponent->SetVisibility(true);
 
 	SniperGunComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperMesh"));
-	SniperGunComponent->SetupAttachment(GetMesh());
+	SniperGunComponent->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
 	ConstructorHelpers::FObjectFinder<UStaticMesh> SniperMesh(TEXT("'/Game/Resources/SniperGun/sniper1.sniper1'"));
 	if (SniperMesh.Succeeded())
 	{
 		SniperGunComponent->SetStaticMesh(SniperMesh.Object);
-		SniperGunComponent->SetRelativeLocation(FVector(-22, 55, 120));
+		SniperGunComponent->SetRelativeLocation(FVector(-42, 7, 1));
+		SniperGunComponent->SetRelativeRotation(FRotator(0, 90, 0));
 		SniperGunComponent->SetRelativeScale3D(FVector(0.15));
 	}
 	SniperGunComponent->SetVisibility(false);
+
+    ConstructorHelpers::FObjectFinder<USoundBase> FireSoundObject(TEXT("'/Game/Resources/SniperGun/Rifle.Rifle'"));
+	if (FireSoundObject.Succeeded())
+	{
+		FireSound = FireSoundObject.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -65,6 +76,7 @@ void ATPSPlayer::BeginPlay()
 	SniperUI = CreateWidget(GetWorld(), SniperUIClass);
 	CrosshairUI = CreateWidget(GetWorld(), CrosshairUIClass);
 	CrosshairUI->AddToViewport();
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 // Called every frame
@@ -93,6 +105,18 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction(TEXT("Zoom"), EInputEvent::IE_Pressed, this, &ATPSPlayer::Zoom);
 	PlayerInputComponent->BindAction(TEXT("GranadeGun"), EInputEvent::IE_Pressed, this, &ATPSPlayer::EquipGranadeGun);
 	PlayerInputComponent->BindAction(TEXT("SniperGun"), EInputEvent::IE_Pressed, this, &ATPSPlayer::EquipSniperGun);
+	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Pressed, this, &ATPSPlayer::RunPressed);
+	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Released, this, &ATPSPlayer::RunReleased);
+}
+
+void ATPSPlayer::RunPressed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+}
+
+void ATPSPlayer::RunReleased()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void ATPSPlayer::LookUp(float value)
@@ -117,6 +141,10 @@ void ATPSPlayer::Vertical(float value)
 
 void ATPSPlayer::Fire()
 {
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraShake(CameraShakeClass);
+	Cast<UPlayerAnim>(GetMesh()->GetAnimInstance())->PlayAttackAnim();
+	UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
+
 	if (bEquipGranadeGun)
 	{
         GetWorld()->SpawnActor<ABullet>(BulletClass, GunMeshComponent->GetSocketTransform(TEXT("FirePosition")));
