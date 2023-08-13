@@ -13,6 +13,7 @@
 #include "EnemyFSM.h"
 #include "Bullet.h"
 #include "PlayerAnim.h"
+#include "TPSProject.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -176,6 +177,11 @@ void ATPSPlayer::Fire()
 			if (Enemy != nullptr)
 			{
 				Enemy->FSM->OnDamageProcess();
+                PRINT_LOG(TEXT("Enemy is not null"));
+			}
+			else
+			{
+                PRINT_LOG(TEXT("Enemy is null"));
 			}
         }
 	}

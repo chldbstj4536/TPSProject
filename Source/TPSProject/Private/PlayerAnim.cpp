@@ -16,7 +16,6 @@ void UPlayerAnim::NativeUpdateAnimation(float DeltaSeconds)
         Direction = FVector::DotProduct(owner->GetVelocity(), owner->GetActorRightVector());
         Speed = FVector::DotProduct(owner->GetVelocity(), owner->GetActorForwardVector());
         bIsInAir = owner->GetCharacterMovement()->IsFalling();
-        UE_LOG(LogTemp, Warning, TEXT("%f, %f"), Direction, Speed);
     }
 }
 

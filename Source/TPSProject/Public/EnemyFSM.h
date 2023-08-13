@@ -40,9 +40,13 @@ public:
 	void DieState();
 
 	void OnDamageProcess();
+	bool GetRandomPositionInNavMesh(FVector CenterLocation, float Radius, FVector& Destination);
 
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::Idle;
+
+	UPROPERTY()
+    class UEnemyAnim* EnemyAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category=FSM)
 	float IdleDelayTime = 2;
@@ -68,4 +72,9 @@ public:
 	
 	UPROPERTY()
     class AEnemy* Me = nullptr;
+	
+	UPROPERTY()
+	class AAIController* AIController;
+
+	FVector RandomPosition;
 };
