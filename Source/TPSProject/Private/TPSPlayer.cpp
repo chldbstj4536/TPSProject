@@ -3,17 +3,8 @@
 #include "TPSPlayer.h"
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
-#include <Components/ArrowComponent.h>
-#include <Blueprint/UserWidget.h>
-#include <Particles/ParticleSystem.h>
-#include <Kismet/GameplayStatics.h>
-#include <GameFramework/CharacterMovementComponent.h>
-#include <Sound/SoundBase.h>
-#include "Enemy.h"
-#include "EnemyFSM.h"
-#include "Bullet.h"
-#include "PlayerAnim.h"
-#include "TPSProject.h"
+#include "PlayerMove.h"
+#include "PlayerFire.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -62,22 +53,13 @@ ATPSPlayer::ATPSPlayer()
 	}
 	SniperGunComponent->SetVisibility(false);
 
-    ConstructorHelpers::FObjectFinder<USoundBase> FireSoundObject(TEXT("'/Game/Resources/SniperGun/Rifle.Rifle'"));
-	if (FireSoundObject.Succeeded())
-	{
-		FireSound = FireSoundObject.Object;
-	}
+	PlayerMoveComponent = CreateDefaultSubobject<UPlayerMove>(TEXT("PlayerMove"));
 }
 
 // Called when the game starts or when spawned
 void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SniperUI = CreateWidget(GetWorld(), SniperUIClass);
-	CrosshairUI = CreateWidget(GetWorld(), CrosshairUIClass);
-	CrosshairUI->AddToViewport();
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 // Called every frame
@@ -85,11 +67,6 @@ void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FTransform Transform(GetActorRotation());
-
-	FVector NewDirection = Transform.TransformVector(Direction);
-	NewDirection.Normalize();
-	AddMovementInput(NewDirection);
 }
 
 // Called to bind functionality to input
@@ -97,130 +74,6 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ATPSPlayer::LookUp);
-	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATPSPlayer::Turn);
-	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ATPSPlayer::Jump);
-	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &ATPSPlayer::Vertical);
-	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &ATPSPlayer::Horizontal);
-	PlayerInputComponent->BindAction(TEXT("Fire"), EInputEvent::IE_Pressed, this, &ATPSPlayer::Fire);
-	PlayerInputComponent->BindAction(TEXT("Zoom"), EInputEvent::IE_Pressed, this, &ATPSPlayer::Zoom);
-	PlayerInputComponent->BindAction(TEXT("GranadeGun"), EInputEvent::IE_Pressed, this, &ATPSPlayer::EquipGranadeGun);
-	PlayerInputComponent->BindAction(TEXT("SniperGun"), EInputEvent::IE_Pressed, this, &ATPSPlayer::EquipSniperGun);
-	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Pressed, this, &ATPSPlayer::RunPressed);
-	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Released, this, &ATPSPlayer::RunReleased);
-}
+	OnInputBindingDelegate.Broadcast(PlayerInputComponent);
 
-void ATPSPlayer::RunPressed()
-{
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-}
-
-void ATPSPlayer::RunReleased()
-{
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-}
-
-void ATPSPlayer::LookUp(float value)
-{
-	AddControllerPitchInput(value);
-}
-
-void ATPSPlayer::Turn(float value)
-{
-	AddControllerYawInput(value);
-}
-
-void ATPSPlayer::Horizontal(float value)
-{
-	Direction.Y = value;
-}
-
-void ATPSPlayer::Vertical(float value)
-{
-	Direction.X = value;
-}
-
-void ATPSPlayer::Fire()
-{
-	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraShake(CameraShakeClass);
-	Cast<UPlayerAnim>(GetMesh()->GetAnimInstance())->PlayAttackAnim();
-	UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
-
-	if (bEquipGranadeGun)
-	{
-        GetWorld()->SpawnActor<ABullet>(BulletClass, GunMeshComponent->GetSocketTransform(TEXT("FirePosition")));
-    }
-    else
-	{
-		FVector StartPosition = TPSCameraComponent->GetComponentLocation();
-		FVector EndPosition = TPSCameraComponent->GetForwardVector() * 5000 + StartPosition;
-
-		// LineTrace의 충돌 정보를 담을 변수
-		FHitResult HitInfo;
-		// 충돌 옵션 설정 변수
-		FCollisionQueryParams Params;
-		// 자기 자신(플레이어)는 충돌에서 제외
-		Params.AddIgnoredActor(this);
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo, StartPosition, EndPosition, ECollisionChannel::ECC_Visibility, Params);
-
-		if (bHit)
-        {
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, HitInfo.ImpactPoint);
-			UPrimitiveComponent* HitComponent = HitInfo.GetComponent();
-			if (HitComponent != nullptr && HitComponent->IsSimulatingPhysics())
-			{
-				HitComponent->AddForce(-HitInfo.ImpactNormal * HitComponent->GetMass() * 500000);
-			}
-
-			AEnemy* Enemy = Cast<AEnemy>(HitInfo.GetActor());
-			if (Enemy != nullptr)
-			{
-				Enemy->FSM->OnDamageProcess();
-                PRINT_LOG(TEXT("Enemy is not null"));
-			}
-			else
-			{
-                PRINT_LOG(TEXT("Enemy is null"));
-			}
-        }
-	}
-}
-
-void ATPSPlayer::Zoom()
-{
-	bIsZooming = !bIsZooming;
-
-	if (bIsZooming)
-	{
-		CrosshairUI->RemoveFromParent();
-		SniperUI->AddToViewport();
-        TPSCameraComponent->SetFieldOfView(45);
-	}
-	else
-	{
-		SniperUI->RemoveFromParent();
-		CrosshairUI->AddToViewport();
-        TPSCameraComponent->SetFieldOfView(90);
-	}
-}
-
-void ATPSPlayer::EquipGranadeGun()
-{
-	if (bEquipGranadeGun)
-		return;
-
-	bEquipGranadeGun = true;
-	GunMeshComponent->SetVisibility(true);
-	SniperGunComponent->SetVisibility(false);
-}
-
-void ATPSPlayer::EquipSniperGun()
-{
-	if (!bEquipGranadeGun)
-		return;
-
-	bEquipGranadeGun = false;
-	GunMeshComponent->SetVisibility(false);
-	SniperGunComponent->SetVisibility(true);
 }

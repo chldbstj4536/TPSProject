@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "TPSPlayer.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FInputBindingDelegate, class UInputComponent*);
+
 UCLASS()
 class TPSPROJECT_API ATPSPlayer : public ACharacter
 {
@@ -19,33 +21,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	void RunPressed();
-	UFUNCTION()
-	void RunReleased();
-	UFUNCTION()
-    void LookUp(float value);
-	UFUNCTION()
-    void Turn(float value);
-	UFUNCTION()
-    void Horizontal(float value);
-	UFUNCTION()
-    void Vertical(float value);
-	UFUNCTION()
-    void Fire();
-	UFUNCTION()
-	void Zoom();
-	UFUNCTION()
-	void EquipGranadeGun();
-	UFUNCTION()
-	void EquipSniperGun();
-
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+public:	
+	FInputBindingDelegate OnInputBindingDelegate;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* SpringArmComponent;
@@ -59,39 +42,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = GunMesh)
 	class UStaticMeshComponent* SniperGunComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = SniperUI)
-	TSubclassOf<class UUserWidget> SniperUIClass;
+	UPROPERTY(VisibleAnywhere, Category = Component)
+	class UPlayerBaseComponent* PlayerMoveComponent;
 
-	class UUserWidget* SniperUI;
+	UPROPERTY(VisibleAnywhere, Category = Component)
+	class UPlayerBaseComponent* PlayerFireComponent;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UUserWidget> CrosshairUIClass;
-	class UUserWidget* CrosshairUI;
-
-	UPROPERTY(EditDefaultsOnly)
-	class UParticleSystem* HitParticle;
-
-	UPROPERTY(EditDefaultsOnly)
-    TSubclassOf<class ABullet> BulletClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class UCameraShakeBase> CameraShakeClass;
-
-	UPROPERTY(EditDefaultsOnly)
-    class USoundBase* FireSound;
-
-	UPROPERTY(VisibleAnywhere)
-	FVector Direction;
-
-	UPROPERTY(EditAnywhere)
-	float WalkSpeed = 200.0f;
-
-	UPROPERTY(EditAnywhere)
-	float RunSpeed = 600.0f;
-
-	UPROPERTY(VisibleAnywhere)
-	bool bIsZooming = false;
-
-	UPROPERTY(VisibleAnywhere)
-	bool bEquipGranadeGun = true;
 };
