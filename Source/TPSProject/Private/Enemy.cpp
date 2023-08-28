@@ -19,7 +19,7 @@ AEnemy::AEnemy()
         GetMesh()->SetSkeletalMesh(MeshFinder.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 		GetMesh()->SetRelativeScale3D(FVector(0.84));
-		ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClass(TEXT("'/Game/Blueprints/ABP_Enemy.ABP_Enemy_C'"));
+		ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClass(TEXT("'/Script/Engine.AnimBlueprint'/Game/Blueprints/ABP_Enemy.ABP_Enemy_C'"));
 		if (AnimInstanceClass.Succeeded())
 		{
             GetMesh()->SetAnimInstanceClass(AnimInstanceClass.Class);

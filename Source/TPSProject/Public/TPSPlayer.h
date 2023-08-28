@@ -27,6 +27,16 @@ protected:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable, Category = Player)
+	void OnHitEvent();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
+	void OnGameOver();
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Player)
+	void OnUsingGrenade(bool isGrenade);
+
 public:	
 	FInputBindingDelegate OnInputBindingDelegate;
 
@@ -48,4 +58,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Component)
 	class UPlayerBaseComponent* PlayerFireComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Player)
+	int32 InitialHP = 10;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Player)
+    int32 CurrentHP;
 };

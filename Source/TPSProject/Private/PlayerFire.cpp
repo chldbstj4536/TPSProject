@@ -115,6 +115,8 @@ void UPlayerFire::EquipGranadeGun()
 	bEquipGranadeGun = true;
 	GunMeshComponent->SetVisibility(true);
 	SniperGunComponent->SetVisibility(false);
+
+	Owner->OnUsingGrenade(true);
 }
 
 void UPlayerFire::EquipSniperGun()
@@ -125,4 +127,6 @@ void UPlayerFire::EquipSniperGun()
 	bEquipGranadeGun = false;
 	GunMeshComponent->SetVisibility(false);
 	SniperGunComponent->SetVisibility(true);
+
+	Owner->OnUsingGrenade(false);
 }
